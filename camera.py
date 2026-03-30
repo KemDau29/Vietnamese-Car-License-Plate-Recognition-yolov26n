@@ -11,7 +11,10 @@ load_dotenv()
 
 
 # 1. CẤU HÌNH & THIẾT LẬP BAN ĐẦU
-API_KEY = 'OCR_API_KEY'  
+API_KEY = os.getenv("OCR_API_KEY", "")
+if not API_KEY:
+    raise ValueError("OCR_API_KEY missing!")
+
 WINDOW_NAME = "LPR Dashboard HCMUTE"
 SAVE_DIR = "lpr_output"
 CSV_FILE = os.path.join(SAVE_DIR, "lpr_log.csv")
