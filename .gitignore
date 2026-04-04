@@ -20,3 +20,5 @@
 lpr_output/
 __pycache__/
 *.pyc
+
+vclpr/
