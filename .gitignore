@@ -15,5 +15,8 @@
 # Environments
 .env
 
-# Output files
-/lpr_output/
+
+.idea/
+lpr_output/
+__pycache__/
+*.pyc
