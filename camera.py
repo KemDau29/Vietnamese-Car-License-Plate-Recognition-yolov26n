@@ -7,27 +7,16 @@ import requests
 import csv
 import re
 from dotenv import load_dotenv
+from image_processing import dip_algorithm_pro
+from ocr_service import call_ocr_space
+from config import *
 import serial
 
 load_dotenv()
 
-# 1. CẤU HÌNH & THIẾT LẬP BAN ĐẦU
-API_KEY = os.getenv("OCR_API_KEY", "")
-if not API_KEY:
-    raise ValueError("OCR_API_KEY missing!")
-
-WINDOW_NAME = "LPR Dashboard HCMUTE"
-SAVE_DIR = "lpr_output"
-CSV_FILE = os.path.join(SAVE_DIR, "lpr_log.csv")
-
-if not os.path.exists(SAVE_DIR): os.makedirs(SAVE_DIR)
-if not os.path.exists(CSV_FILE):
-    with open(CSV_FILE, mode='w', newline='') as f:
-        writer = csv.writer(f)
-        writer.writerow(['Time', 'Full_Text', 'Clean_Plate', 'Image_Path'])
-        
+# CẤU HÌNH & KẾT NỐI ARDUINO
 try:
-    arduino = serial.Serial(port='COM3', baudrate=9600, timeout=0.1)
+    arduino = serial.Serial(port=ARDUINO_PORT, baudrate=BAUD_RATE, timeout=0.1)
     print("Đã kết nối Arduino!")
 except:
     arduino = None
@@ -37,39 +26,7 @@ except:
 model = YOLO('best.pt') 
 cap = cv2.VideoCapture(0)
 
-# CÁC HÀM XỬ LÝ OCR & DIP
 def nothing(x): pass
-
-def call_ocr_space(img_np):
-    try:
-        _, img_encoded = cv2.imencode('.jpg', img_np)
-        img_bytes = img_encoded.tobytes()
-        
-        payload = {
-            'apikey': API_KEY,
-            'language': 'eng',
-            'isOverlayRequired': False,
-            'OCREngine': 2 
-        }
-        files = {'filename.jpg': img_bytes}
-        
-        response = requests.post('https://api.ocr.space/parse/image', files=files, data=payload, timeout=10)
-        result = response.json()
-        
-        if result.get('OCRExitCode') == 1:
-            raw_text = result['ParsedResults'][0]['ParsedText']
-            clean_text = re.sub(r'[^A-Z0-9]', '', raw_text.upper())
-            return raw_text, clean_text
-        return "ERR", "ERR"
-    except:
-        return "TIMEOUT", "TIMEOUT"
-
-def dip_algorithm_pro(img):
-    if img is None: return None
-    gray = cv2.cvtColor(img, cv2.COLOR_BGR2GRAY)
-    clahe = cv2.createCLAHE(clipLimit=3.5, tileGridSize=(8, 8))
-    contrast = clahe.apply(gray)
-    return contrast
 
 # Khởi tạo Giao diện & Trackbars 
 cv2.namedWindow(WINDOW_NAME, cv2.WINDOW_GUI_EXPANDED) 
