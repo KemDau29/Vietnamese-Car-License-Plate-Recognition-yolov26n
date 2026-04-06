@@ -15,6 +15,7 @@
 # Environments
 .env
 
+.vscode/
 
 .idea/
 lpr_output/
